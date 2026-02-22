@@ -2,8 +2,8 @@ package com.werp.sero.approval.query.controller;
 
 import com.werp.sero.approval.query.dto.ApprovalTemplateInfoResponseDTO;
 import com.werp.sero.approval.query.service.ApprovalTemplateQueryService;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +24,14 @@ public class ApprovalTemplateQueryController {
 
     @Operation(summary = "결재선 템플릿 목록 조회")
     @GetMapping
-    public ResponseEntity<List<ApprovalTemplateInfoResponseDTO>> getApprovalTemplates(@CurrentUser Employee employee) {
-        return ResponseEntity.ok(approvalTemplateQueryService.getApprovalTemplates(employee));
+    public ResponseEntity<List<ApprovalTemplateInfoResponseDTO>> getApprovalTemplates(@CurrentUser final CustomUserDetails user) {
+        return ResponseEntity.ok(approvalTemplateQueryService.getApprovalTemplates(user.getId()));
     }
 
     @Operation(summary = "결재선 템플릿 상세 조회")
     @GetMapping("/{approvalTemplateId}")
-    public ResponseEntity<ApprovalTemplateInfoResponseDTO> getApprovalTemplateById(@CurrentUser final Employee employee,
-                                                                                     @PathVariable(name = "approvalTemplateId") final int approvalTemplateId) {
-        return ResponseEntity.ok(approvalTemplateQueryService.getApprovalTemplateById(employee, approvalTemplateId));
+    public ResponseEntity<ApprovalTemplateInfoResponseDTO> getApprovalTemplateById(@CurrentUser final CustomUserDetails user,
+                                                                                   @PathVariable(name = "approvalTemplateId") final int approvalTemplateId) {
+        return ResponseEntity.ok(approvalTemplateQueryService.getApprovalTemplateById(user.getId(), approvalTemplateId));
     }
 }

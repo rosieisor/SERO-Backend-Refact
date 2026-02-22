@@ -4,7 +4,6 @@ import com.werp.sero.approval.exception.*;
 import com.werp.sero.approval.query.dao.ApprovalMapper;
 import com.werp.sero.approval.query.dto.*;
 import com.werp.sero.common.util.DateTimeUtils;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public ApprovalListResponseDTO getSubmittedApprovals(final Employee employee,
+    public ApprovalListResponseDTO getSubmittedApprovals(final int employeeId,
                                                          final SubmittedApprovalFilterRequestDTO filterDTO,
                                                          final Pageable pageable) {
         validateApprovalStatus(filterDTO.getStatus());
@@ -41,7 +40,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         validateRefDocType(filterDTO.getRefDocType());
 
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .approvalStatus(filterDTO.getStatus())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
@@ -68,7 +67,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public ApprovalListResponseDTO getArchivedApprovals(final Employee employee,
+    public ApprovalListResponseDTO getArchivedApprovals(final int employeeId,
                                                         final ArchivedApprovalFilterRequestDTO filterDTO,
                                                         final Pageable pageable) {
         validateApprovalStatus(filterDTO.getApprovalStatus());
@@ -80,7 +79,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         validateRefDocType(filterDTO.getRefDocType());
 
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .approvalStatus(filterDTO.getApprovalStatus())
                 .keyword(filterDTO.getKeyword())
                 .approvalTypeList(
@@ -115,7 +114,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public ApprovalListResponseDTO getRequestedApprovals(final Employee employee,
+    public ApprovalListResponseDTO getRequestedApprovals(final int employeeId,
                                                          final RequestedApprovalFilterRequestDTO filterDTO,
                                                          final Pageable pageable) {
         validateApproverType(filterDTO.getApprovalType());
@@ -123,7 +122,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         validateRefDocType(filterDTO.getRefDocType());
 
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
@@ -154,13 +153,13 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public ApprovalListResponseDTO getReceivedApprovals(final Employee employee,
+    public ApprovalListResponseDTO getReceivedApprovals(final int employeeId,
                                                         final ReceivedApprovalFilterRequestDTO filterDTO,
                                                         final Pageable pageable) {
         validateRefDocType(filterDTO.getRefDocType());
 
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
@@ -187,7 +186,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public ApprovalListResponseDTO getReferencedApprovals(final Employee employee,
+    public ApprovalListResponseDTO getReferencedApprovals(final int employeeId,
                                                           final ReferencedApprovalFilterRequestDTO filterDTO,
                                                           final Pageable pageable) {
         validateApprovalStatus(filterDTO.getApprovalStatus());
@@ -195,7 +194,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         validateRefDocType(filterDTO.getRefDocType());
 
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
@@ -223,12 +222,12 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
 
     @Transactional
     @Override
-    public ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId) {
+    public ApprovalDetailResponseDTO getApprovalInfo(final int employeeId, final int approvalId) {
         final ApprovalDetailResponseDTO responseDTO = findApprovalByApprovalId(approvalId);
 
         final int refId = findRefDocIdByRefDocCode(responseDTO.getRefDocType(), responseDTO.getRefDocCode());
 
-        final ApprovalLineInfoResponseDTO myApprovalLine = getMyApprovalLine(employee, responseDTO);
+        final ApprovalLineInfoResponseDTO myApprovalLine = getMyApprovalLine(employeeId, responseDTO);
 
         final List<ApprovalLineInfoResponseDTO> approvalLines = responseDTO.getTotalApprovalLines().stream()
                 .filter(line -> APPROVAL_TYPE_APPROVAL_CODE.equals(line.getLineType())
@@ -303,13 +302,13 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         return refId;
     }
 
-    private ApprovalLineInfoResponseDTO getMyApprovalLine(final Employee employee, final ApprovalDetailResponseDTO responseDTO) {
+    private ApprovalLineInfoResponseDTO getMyApprovalLine(final int employeeId, final ApprovalDetailResponseDTO responseDTO) {
         final ApprovalLineInfoResponseDTO approvalLineInfoResponseDTO = responseDTO.getTotalApprovalLines().stream()
-                .filter(line -> line.getApproverId() == employee.getId())
+                .filter(line -> line.getApproverId() == employeeId)
                 .findFirst()
                 .orElse(null);
 
-        if (responseDTO.getDrafterId() != employee.getId() && approvalLineInfoResponseDTO == null) {
+        if (responseDTO.getDrafterId() != employeeId && approvalLineInfoResponseDTO == null) {
             throw new ApprovalLineAccessDeniedException();
         }
 

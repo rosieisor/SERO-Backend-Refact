@@ -5,6 +5,8 @@ import com.werp.sero.client.command.domain.repository.ClientRepository;
 import com.werp.sero.client.exception.ClientNotFoundException;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
+import com.werp.sero.employee.command.domain.repository.ClientEmployeeRepository;
+import com.werp.sero.employee.command.exception.ClientEmployeeNotFoundException;
 import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -25,14 +27,17 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
     private final SORepository orderRepository;
     private final SOItemRepository orderItemRepository;
-    private final ClientRepository  clientRepository;
+    private final ClientRepository clientRepository;
+    private final ClientEmployeeRepository clientEmployeeRepository;
 
     private final SOPdfService soPdfService;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Transactional
     @Override
-    public SOClientOrderDTO createOrder(final ClientEmployee clientEmployee, final SOClientOrderDTO request) {
+    public SOClientOrderDTO createOrder(final int clientEmployeeId, final SOClientOrderDTO request) {
+        final ClientEmployee clientEmployee = clientEmployeeRepository.findById(clientEmployeeId)
+                .orElseThrow(ClientEmployeeNotFoundException::new);
 
         // 주문 번호 생성
         String generatedSoCode = documentSequenceCommandService.generateDocumentCode("DOC_SO");

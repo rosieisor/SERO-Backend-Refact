@@ -1,6 +1,5 @@
 package com.werp.sero.notice.query.service;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.notice.exception.NoticeNotFoundException;
 import com.werp.sero.notice.query.dao.NoticeMapper;
 import com.werp.sero.notice.query.dto.NoticeDetailResponseDTO;
@@ -41,12 +40,12 @@ public class NoticeQueryServiceImpl implements NoticeQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public NoticeListResponseDTO getNotices(final Employee employee, final String category, final String keyword,
+    public NoticeListResponseDTO getNotices(final int employeeId, final String category, final String keyword,
                                             final boolean onlyMine, final Pageable pageable) {
         final NoticeFilterDTO filter = NoticeFilterDTO.builder()
                 .category(category)
                 .keyword(keyword)
-                .employeeId(employee.getId())
+                .employeeId(employeeId)
                 .onlyMine(onlyMine)
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())

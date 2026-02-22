@@ -1,20 +1,18 @@
 package com.werp.sero.shipping.command.application.service;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
-
 public interface DeliveryCommandService {
 
     /**
      * Start delivery - Update status to SHIP_ING
      * @param giCode 출고지시 코드
-     * @param driver 기사 정보 (authenticated employee)
+     * @param driverId 기사 ID
      */
-    void startDelivery(String giCode, Employee driver);
+    void startDelivery(String giCode, int driverId);
 
     /**
      * Complete delivery - Update status to SHIP_DONE
      * @param giCode 출고지시 코드
-     * @param driver 기사 정보 (authenticated employee)
+     * @param driverId 기사 ID
      */
-    void completeDelivery(String giCode, Employee driver);
+    void completeDelivery(String giCode, int driverId);
 }

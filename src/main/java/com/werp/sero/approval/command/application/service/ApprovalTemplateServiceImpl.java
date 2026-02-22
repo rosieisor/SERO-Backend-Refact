@@ -31,7 +31,9 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
 
     @Transactional
     @Override
-    public ApprovalTemplateResponseDTO registerApprovalTemplate(final Employee employee, final ApprovalTemplateCreateRequestDTO requestDTO) {
+    public ApprovalTemplateResponseDTO registerApprovalTemplate(final int employeeId, final ApprovalTemplateCreateRequestDTO requestDTO) {
+        final Employee employee = findEmployeeId(employeeId);
+
         validateApprovalTemplateName(employee, requestDTO.getName());
 
         ApprovalTemplate approvalTemplate = new ApprovalTemplate(requestDTO.getName(), requestDTO.getDescription(),
@@ -65,7 +67,9 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
 
     @Transactional
     @Override
-    public void deleteApprovalTemplate(final Employee employee, final int approvalTemplateId) {
+    public void deleteApprovalTemplate(final int employeeId, final int approvalTemplateId) {
+        final Employee employee = findEmployeeId(employeeId);
+
         final ApprovalTemplate approvalTemplate = findApprovalTemplateByIdAndEmployee(employee, approvalTemplateId);
 
         approvalTemplateLineRepository.deleteByApprovalTemplate(approvalTemplate);
@@ -139,5 +143,9 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
                 }
             }
         }
+    }
+
+    private Employee findEmployeeId(final int employeeId) {
+        return employeeRepository.findByIdAndStatus(employeeId, "ES_ACT").orElseThrow(EmployeeNotFoundException::new);
     }
 }

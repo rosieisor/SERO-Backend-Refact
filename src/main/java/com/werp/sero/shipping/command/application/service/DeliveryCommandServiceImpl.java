@@ -1,6 +1,8 @@
 package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.application.service.SOStateService;
@@ -40,12 +42,15 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
     private final SORepository soRepository;
     private final GIRepository giRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final EmployeeRepository employeeRepository;
 
     private final SOStateService orderStateService;
 
 
     @Override
-    public void startDelivery(String giCode, Employee driver) {
+    public void startDelivery(String giCode, int driverId) {
+        Employee driver = findEmployeeId(driverId);
+
         // 1. 배송 조회
         Delivery delivery = deliveryRepository.findByGoodsIssue_GiCode(giCode)
                 .orElseThrow(DeliveryNotFoundException::new);
@@ -70,11 +75,11 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
-                NotificationType.SHIPPING,
-                "배송 출발",
-                "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
-                delivery.getGoodsIssue().getManager().getId(),
-                "/warehouse/goods-issues/" + delivery.getGoodsIssue().getId()
+                    NotificationType.SHIPPING,
+                    "배송 출발",
+                    "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
+                    delivery.getGoodsIssue().getManager().getId(),
+                    "/warehouse/goods-issues/" + delivery.getGoodsIssue().getId()
             ));
 
             eventPublisher.publishEvent(NotificationEvent.forClient(
@@ -88,7 +93,9 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
     }
 
     @Override
-    public void completeDelivery(String giCode, Employee driver) {
+    public void completeDelivery(String giCode, int driverId) {
+        Employee driver = findEmployeeId(driverId);
+
         // 1. 배송 조회
         Delivery delivery = deliveryRepository.findByGoodsIssue_GiCode(giCode)
                 .orElseThrow(DeliveryNotFoundException::new);
@@ -116,7 +123,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
             SalesOrderItemHistory history = SalesOrderItemHistory.createForCompleted(
                     giItem.getSalesOrderItem().getId(),
                     giItem.getQuantity(),
-                    driver.getId(),
+                    driverId,
                     createdAt,
                     null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
@@ -134,11 +141,11 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         // 7. 출고지시 담당자 및 고객사 담당자에게 알림 발송
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
-                NotificationType.SHIPPING,
-                "배송 도착",
-                "출고지시 " + giCode + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
-                delivery.getGoodsIssue().getManager().getId(),
-                "/warehouse/goods-issues/" + giCode
+                    NotificationType.SHIPPING,
+                    "배송 도착",
+                    "출고지시 " + giCode + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
+                    delivery.getGoodsIssue().getManager().getId(),
+                    "/warehouse/goods-issues/" + giCode
             ));
 
             eventPublisher.publishEvent(NotificationEvent.forClient(
@@ -149,5 +156,9 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                     "/client-portal/orders/" + so.getId()
             ));
         }
+    }
+
+    private Employee findEmployeeId(final int employeeId) {
+        return employeeRepository.findByIdAndStatus(employeeId, "ES_ACT").orElseThrow(EmployeeNotFoundException::new);
     }
 }

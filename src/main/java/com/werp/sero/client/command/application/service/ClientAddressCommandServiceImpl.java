@@ -18,7 +18,6 @@ import com.werp.sero.client.command.domain.repository.ClientRepository;
 import com.werp.sero.client.exception.ClientAccessDeniedException;
 import com.werp.sero.client.exception.ClientAddressNotFoundException;
 import com.werp.sero.client.exception.ClientNotFoundException;
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -35,12 +34,12 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
     /**
      * 로그인한 ClientEmployee가 요청한 clientId에 접근 권한이 있는지 검증
      *
-     * @param clientEmployee 현재 로그인한 ClientEmployee
+     * @param currentClientId 현재 로그인한 ClientEmployee
      * @param requestedClientId 요청한 clientId
      * @throws ClientAccessDeniedException ClientEmployee의 clientId와 요청한 clientId가 일치하지 않을 경우
      */
-    public void validateClientAccess(ClientEmployee clientEmployee, int requestedClientId) {
-        if (clientEmployee.getClient().getId() != requestedClientId) {
+    public void validateClientAccess(int currentClientId, int requestedClientId) {
+        if (currentClientId != requestedClientId) {
             throw new ClientAccessDeniedException();
         }
     }

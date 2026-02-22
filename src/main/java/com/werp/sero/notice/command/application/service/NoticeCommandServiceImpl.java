@@ -7,6 +7,8 @@ import com.werp.sero.common.file.FileValidator;
 import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.notice.command.application.dto.NoticeAttachmentResponseDTO;
 import com.werp.sero.notice.command.application.dto.NoticeCreateRequestDTO;
 import com.werp.sero.notice.command.application.dto.NoticeResponseDTO;
@@ -36,13 +38,17 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
     private final S3Uploader s3Uploader;
     private final FileValidator fileValidator;
     private final EmployeePermissionRepository employeePermissionRepository;
+    private final EmployeeRepository employeeRepository;
 
     private final CommonCodeManageQueryService commonCodeManageQueryService;
 
     @Transactional
     @Override
-    public NoticeResponseDTO registerNotice(final Employee employee, final NoticeCreateRequestDTO requestDTO,
+    public NoticeResponseDTO registerNotice(final int employeeId, final NoticeCreateRequestDTO requestDTO,
                                             final List<MultipartFile> files) {
+        final Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         validateCategory(requestDTO.getCategory());
 
         Notice notice = new Notice(requestDTO.getTitle(), requestDTO.getContent(), requestDTO.getCategory(),
@@ -64,7 +70,10 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
 
     @Transactional
     @Override
-    public void deleteNotice(final Employee employee, final int noticeId) {
+    public void deleteNotice(final int employeeId, final int noticeId) {
+        final Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         final Notice notice = findById(noticeId);
 
         validateNoticeAccess(employee, notice);

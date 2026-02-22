@@ -1,7 +1,7 @@
 package com.werp.sero.shipping.command.application.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.shipping.command.application.dto.DOCreateRequestDTO;
 import com.werp.sero.shipping.command.application.service.DeliveryOrderCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,9 +30,9 @@ public class DeliveryOrderCommandController {
     @Operation(summary = "납품서 생성", description = "주문을 기반으로 납품서를 생성합니다.")
     public ResponseEntity<Map<String, String>> createDeliveryOrder(
             @Valid @RequestBody DOCreateRequestDTO requestDTO,
-            @CurrentUser Employee currentEmployee
+            @CurrentUser CustomUserDetails user
     ) {
-        String doCode = deliveryOrderCommandService.createDeliveryOrder(requestDTO, currentEmployee);
+        String doCode = deliveryOrderCommandService.createDeliveryOrder(requestDTO, user.getId());
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "납품서가 생성되었습니다.");

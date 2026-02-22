@@ -1,9 +1,9 @@
 package com.werp.sero.order.query.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.order.query.dto.*;
-import com.werp.sero.order.query.service.SOClientQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.order.query.service.SOClientQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,9 +45,9 @@ public class SOClientQueryController {
     })
     @GetMapping("/history")
     public ResponseEntity<List<SOClientResponseDTO>> findOrderHistory(
-                @CurrentUser final ClientEmployee clientEmployee ){
+            @CurrentUser final CustomUserDetails user) {
 
-        final List<SOClientResponseDTO> response = soClientService.findOrderHistory(clientEmployee);
+        final List<SOClientResponseDTO> response = soClientService.findOrderHistory(user.getClientId());
 
         return ResponseEntity.ok(response);
     }
@@ -72,9 +72,9 @@ public class SOClientQueryController {
     @GetMapping("/{orderId}/copy-info")
     public ResponseEntity<SOClientResponseDTO> getOrderForReorder(
             @PathVariable final int orderId,
-            @CurrentUser final ClientEmployee clientEmployee){
+            @CurrentUser final CustomUserDetails user) {
 
-        final SOClientResponseDTO response = soClientService.getOrderForReorder(orderId, clientEmployee);
+        final SOClientResponseDTO response = soClientService.getOrderForReorder(orderId, user.getClientId());
 
         return ResponseEntity.ok(response);
     }
@@ -99,11 +99,11 @@ public class SOClientQueryController {
     })
     @GetMapping
     public ResponseEntity<List<SOClientListResponseDTO>> getOrderList(
-            @CurrentUser final ClientEmployee clientEmployee,
+            @CurrentUser final CustomUserDetails user,
             @ModelAttribute SOClientFilterDTO filter,
             @RequestParam(defaultValue = "1") Integer page) {
 
-        List<SOClientListResponseDTO> response = soClientService.findClientOrderList(clientEmployee, filter, page);
+        List<SOClientListResponseDTO> response = soClientService.findClientOrderList(user.getClientId(), filter, page);
 
         return ResponseEntity.ok(response);
     }
@@ -128,9 +128,9 @@ public class SOClientQueryController {
     @GetMapping("/{orderId}")
     public ResponseEntity<SOClientDetailResponseDTO> getOrderDetail(
             @PathVariable int orderId,
-            @CurrentUser final ClientEmployee clientEmployee) {
+            @CurrentUser final CustomUserDetails user) {
 
-        SOClientDetailResponseDTO response = soClientService.findClientOrderDetail(orderId, clientEmployee);
+        SOClientDetailResponseDTO response = soClientService.findClientOrderDetail(orderId, user.getClientId());
 
         return ResponseEntity.ok(response);
     }

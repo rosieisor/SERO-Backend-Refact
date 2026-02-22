@@ -1,6 +1,8 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.material.exception.MaterialNotFoundException;
@@ -34,6 +36,7 @@ public class PPCommandServiceImpl implements PPCommandService{
     private final ProductionLineRepository productionLineRepository;
     private final PRCommandService prCommandService;
     private final MaterialRepository materialRepository;
+    private final EmployeeRepository employeeRepository;
 
     /**
      * 생산계획 검증
@@ -119,7 +122,10 @@ public class PPCommandServiceImpl implements PPCommandService{
      */
     @Override
     @Transactional
-    public void addToPlanningTarget(PPAddTargetRequestDTO request, Employee employee) {
+    public void addToPlanningTarget(PPAddTargetRequestDTO request, int employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         ProductionRequestItem prItem = prItemRepository.findById(request.getPrItemId())
                 .orElseThrow(ProductionRequestItemNotFoundException::new);
 
@@ -152,7 +158,9 @@ public class PPCommandServiceImpl implements PPCommandService{
      */
     @Override
     @Transactional
-    public PPCreateResponseDTO create(PPCreateRequestDTO request, Employee employee) {
+    public PPCreateResponseDTO create(PPCreateRequestDTO request, int employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
 
         validate(new PPValidateRequestDTO(
                 request.getPrItemId(),

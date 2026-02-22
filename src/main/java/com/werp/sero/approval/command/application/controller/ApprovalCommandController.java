@@ -4,8 +4,8 @@ import com.werp.sero.approval.command.application.dto.ApprovalCreateRequestDTO;
 import com.werp.sero.approval.command.application.dto.ApprovalDecisionRequestDTO;
 import com.werp.sero.approval.command.application.dto.ApprovalResponseDTO;
 import com.werp.sero.approval.command.application.service.ApprovalCommandService;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,28 +26,28 @@ public class ApprovalCommandController {
 
     @Operation(summary = "결재 상신")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<ApprovalResponseDTO> submitForApproval(@CurrentUser final Employee employee,
+    public ResponseEntity<ApprovalResponseDTO> submitForApproval(@CurrentUser final CustomUserDetails user,
                                                                  @Valid @RequestPart(name = "requestDTO") final ApprovalCreateRequestDTO requestDTO,
                                                                  @RequestPart(name = "files", required = false) final List<MultipartFile> files) {
-        return ResponseEntity.ok(approvalCommandService.submitForApproval(employee, requestDTO, files));
+        return ResponseEntity.ok(approvalCommandService.submitForApproval(user.getId(), requestDTO, files));
     }
 
     @Operation(summary = "결재 승인")
     @PostMapping("/{approvalId}/approve")
-    public ResponseEntity<Void> approve(@CurrentUser final Employee employee,
+    public ResponseEntity<Void> approve(@CurrentUser final CustomUserDetails user,
                                         @PathVariable("approvalId") final int approvalId,
                                         @RequestBody final ApprovalDecisionRequestDTO requestDTO) {
-        approvalCommandService.approve(employee, approvalId, requestDTO);
+        approvalCommandService.approve(user.getId(), approvalId, requestDTO);
 
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "결재 반려")
     @PostMapping("/{approvalId}/reject")
-    public ResponseEntity<Void> reject(@CurrentUser final Employee employee,
+    public ResponseEntity<Void> reject(@CurrentUser final CustomUserDetails user,
                                        @PathVariable("approvalId") final int approvalId,
                                        @RequestBody final ApprovalDecisionRequestDTO requestDTO) {
-        approvalCommandService.reject(employee, approvalId,requestDTO);
+        approvalCommandService.reject(user.getId(), approvalId, requestDTO);
 
         return ResponseEntity.ok().build();
     }

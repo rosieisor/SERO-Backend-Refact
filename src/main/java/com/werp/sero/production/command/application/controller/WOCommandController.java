@@ -1,12 +1,12 @@
 package com.werp.sero.production.command.application.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
+import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.production.command.application.dto.WorkOrderEndRequest;
 import com.werp.sero.production.command.application.dto.WorkOrderResultPreviewRequestDTO;
 import com.werp.sero.production.command.application.dto.WorkOrderResultPreviewResponseDTO;
 import com.werp.sero.production.command.application.service.WOCommandService;
-import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,18 +24,18 @@ public class WOCommandController {
     @Operation(
             summary = "생산계획 기반 작업지시 생성",
             description = """
-                확정된 생산계획(PP)을 기준으로 작업지시를 생성합니다.
-                
-                제약:
-                - PP 상태는 PP_CONFIRMED 이어야 함
-                """
+                    확정된 생산계획(PP)을 기준으로 작업지시를 생성합니다.
+                    
+                    제약:
+                    - PP 상태는 PP_CONFIRMED 이어야 함
+                    """
     )
     @PostMapping
     public ResponseEntity<Void> createWorkOrder(
             @RequestBody @Valid WorkOrderCreateRequestDTO request,
-            @CurrentUser Employee currentEmployee
+            @CurrentUser CustomUserDetails user
     ) {
-        woCommandService.createWorkOrder(request, currentEmployee);
+        woCommandService.createWorkOrder(request, user.getId());
         return ResponseEntity.ok().build();
     }
 
@@ -44,9 +44,9 @@ public class WOCommandController {
     public ResponseEntity<Void> start(
             @PathVariable int woId,
             @RequestParam(required = false) String note,
-            @CurrentUser Employee employee
+            @CurrentUser CustomUserDetails user
     ) {
-        woCommandService.start(woId, note, employee);
+        woCommandService.start(woId, note, user.getId());
         return ResponseEntity.ok().build();
     }
 
@@ -75,9 +75,9 @@ public class WOCommandController {
     public ResponseEntity<Void> end(
             @PathVariable int woId,
             @RequestBody WorkOrderEndRequest request,
-            @CurrentUser Employee currentEmployee
+            @CurrentUser CustomUserDetails user
     ) {
-        woCommandService.end(woId, request, currentEmployee);
+        woCommandService.end(woId, request, user.getId());
         return ResponseEntity.ok().build();
     }
 
