@@ -5,22 +5,17 @@ import com.werp.sero.security.handler.CustomAuthenticationEntryPoint;
 import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;
-import com.werp.sero.security.service.EmployeeUserDetailsService;
 import com.werp.sero.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -29,16 +24,18 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
-public class EmployeeSecurityConfig {
+public class SecurityConfig {
     private static final String[] WHITE_LIST = {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/auth/login",
-
+            "/clients/auth/login",
+            "/auth/reissue",
+            "/clients/auth/reissue"
     };
 
-    private static final String[] AUTHORITY_LIST = {
+    private static final String[] EMPLOYEE_AUTHORITY_LIST = {
             "AC_SYS",
             "AC_SAL",
             "AC_PRO",
@@ -46,27 +43,19 @@ public class EmployeeSecurityConfig {
     };
 
     private final RedisUtil redisUtil;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
-    private final EmployeeUserDetailsService employeeUserDetailsService;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    @Primary
     @Bean
-    public AuthenticationManager employeeAuthenticationManager() {
-        final DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        daoAuthenticationProvider.setUserDetailsService(employeeUserDetailsService);
-
-        return new ProviderManager(daoAuthenticationProvider);
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-    @Order(2)
     @Bean
-    public SecurityFilterChain employeeFilterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(CsrfConfigurer::disable)
@@ -76,16 +65,15 @@ public class EmployeeSecurityConfig {
                 .httpBasic(HttpBasicConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST).permitAll()
-                        .anyRequest().hasAnyAuthority(AUTHORITY_LIST)
+                        .requestMatchers("/clients/**").hasAnyAuthority("AC_CLI", "AC_SYS")
+                        .anyRequest().hasAnyAuthority(EMPLOYEE_AUTHORITY_LIST)
                 )
-                .authenticationManager(employeeAuthenticationManager())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
-                )
-        ;
+                );
 
         return http.build();
     }
