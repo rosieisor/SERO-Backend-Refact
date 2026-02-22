@@ -5,7 +5,6 @@ import com.werp.sero.security.handler.CustomAuthenticationEntryPoint;
 import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;
-import com.werp.sero.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,7 +41,6 @@ public class SecurityConfig {
             "AC_WHS"
     };
 
-    private final RedisUtil redisUtil;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -68,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/clients/**").hasAnyAuthority("AC_CLI", "AC_SYS")
                         .anyRequest().hasAnyAuthority(EMPLOYEE_AUTHORITY_LIST)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)
