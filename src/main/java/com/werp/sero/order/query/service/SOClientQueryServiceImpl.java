@@ -1,11 +1,8 @@
 package com.werp.sero.order.query.service;
 
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
 import com.werp.sero.order.exception.InvalidSalesOrderIdException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOClientMapper;
-import com.werp.sero.order.query.dao.SOMapper;
 import com.werp.sero.order.query.dto.*;
 import com.werp.sero.shipping.query.dao.DOMapper;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +25,13 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SOClientResponseDTO> findOrderHistory(final ClientEmployee clientEmployee) {
-        int clientId = clientEmployee.getClient().getId();
-
+    public List<SOClientResponseDTO> findOrderHistory(final int clientId) {
         return soClientMapper.selectOrderHistory(clientId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SOClientResponseDTO getOrderForReorder(final int orderId, final ClientEmployee clientEmployee) {
-        int clientId = clientEmployee.getClient().getId();
+    public SOClientResponseDTO getOrderForReorder(final int orderId, final int clientId) {
         SOClientResponseDTO order = soClientMapper.selectOrderForReorder(clientId, orderId);
 
         if(order == null){
@@ -50,7 +44,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
     @Override
     @Transactional(readOnly = true)
     public List<SOClientListResponseDTO> findClientOrderList(
-            ClientEmployee clientEmployee,
+            final int clientId,
             SOClientFilterDTO filter,
             Integer page) {
 
@@ -63,7 +57,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
 
         Map<String, Object> params = new HashMap<>();
 
-        params.put("clientId", clientEmployee.getClient().getId());
+        params.put("clientId", clientId);
         params.put("dateField", filter.getDateField());
         params.put("startDate", filter.getStartDate());
         params.put("endDate", filter.getEndDate());
@@ -94,7 +88,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public SOClientDetailResponseDTO findClientOrderDetail(final int orderId, final ClientEmployee clientEmployee) {
+    public SOClientDetailResponseDTO findClientOrderDetail(final int orderId, final int clientId) {
 
         SOClientDetailResponseDTO order = soClientMapper.selectOrderDetailForClient(orderId);
 
@@ -102,7 +96,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
             throw new SalesOrderNotFoundException();
         }
 
-        if( order.getClientId() !=  clientEmployee.getClient().getId()){
+        if( order.getClientId() !=  clientId){
             throw new InvalidSalesOrderIdException();
         }
 

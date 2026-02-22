@@ -41,7 +41,10 @@ public class PRCommandServiceImpl implements PRCommandService {
 
     @Override
     @Transactional
-    public int createDraft(PRDraftCreateRequestDTO dto, Employee drafter) {
+    public int createDraft(PRDraftCreateRequestDTO dto, int drafterId) {
+        Employee drafter = employeeRepository.findById(drafterId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         SalesOrder so = soRepository.findById(dto.getSoId())
                 .orElseThrow(SalesOrderNotFoundException::new);
         
@@ -77,7 +80,7 @@ public class PRCommandServiceImpl implements PRCommandService {
 
     @Override
     @Transactional
-    public void updateDraft(int prId, PRDraftUpdateRequestDTO dto, Employee employee) {
+    public void updateDraft(int prId, PRDraftUpdateRequestDTO dto, int employeeId) {
         ProductionRequest pr = prRepository.findById(prId)
                 .orElseThrow(ProductionDraftNotFoundException::new);
 
@@ -85,7 +88,7 @@ public class PRCommandServiceImpl implements PRCommandService {
         if (!"PR_TMP".equals(pr.getStatus())) {
             throw new ProductionNotDraftException();
         }
-        if (pr.getDrafter().getId() != employee.getId()) {
+        if (pr.getDrafter().getId() != employeeId) {
             throw new ProductionDraftNotFoundException();
         }
 
@@ -128,7 +131,7 @@ public class PRCommandServiceImpl implements PRCommandService {
 
     @Override
     @Transactional
-    public void request(int prId, Employee employee) {
+    public void request(int prId, int employeeId) {
         ProductionRequest pr = prRepository.findById(prId)
                 .orElseThrow(ProductionDraftNotFoundException::new);
 
@@ -136,7 +139,7 @@ public class PRCommandServiceImpl implements PRCommandService {
         if (!"PR_TMP".equals(pr.getStatus())) {
             throw new ProductionNotDraftException();
         }
-        if (pr.getDrafter().getId() != employee.getId()) {
+        if (pr.getDrafter().getId() != employeeId) {
             throw new ProductionDraftNotFoundException();
         }
         if (pr.getTotalQuantity() <= 0) {
@@ -161,7 +164,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                     SalesOrderItemHistory.createForProductionRequest(
                             soItemId,
                             qty,
-                            employee.getId(),
+                            employeeId,
                             null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
                     );
 

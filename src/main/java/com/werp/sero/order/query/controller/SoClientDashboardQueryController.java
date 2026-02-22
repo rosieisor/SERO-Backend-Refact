@@ -1,9 +1,9 @@
 package com.werp.sero.order.query.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.order.query.dto.SOClientDashboardResponseDTO;
-import com.werp.sero.order.query.service.SOClientDashboardQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.order.query.service.SOClientDashboardQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,9 +36,9 @@ public class SoClientDashboardQueryController {
             ))
     })
     public ResponseEntity<SOClientDashboardResponseDTO> getDashboardData(
-            @CurrentUser final ClientEmployee clientEmployee
+            @CurrentUser final CustomUserDetails user
     ) {
-        int clientId = clientEmployee.getClient().getId();
+        int clientId = user.getClientId();
 
         SOClientDashboardResponseDTO response = clientDashboardService.getDashboardData(clientId);
 

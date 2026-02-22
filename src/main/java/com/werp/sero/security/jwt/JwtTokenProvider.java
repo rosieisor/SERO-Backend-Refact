@@ -2,23 +2,20 @@ package com.werp.sero.security.jwt;
 
 import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.security.dto.JwtToken;
+import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.exception.ExpiredTokenException;
 import com.werp.sero.security.jwt.exception.InvalidTokenException;
-import com.werp.sero.security.service.ClientEmployeeUserDetailsService;
-import com.werp.sero.security.service.EmployeeUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -28,16 +25,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
-    public static final String POSITION_KEY = "pos";
-    public static final String ID_KEY = "id";
-    public static final String DEPARTMENT_KEY = "dept";
-    public static final String RANK_KEY = "rank";
-    public static final String CLIENT_ID_KEY = "client";
-    private static final String CLIENT_PERMISSION = "AC_CLI";
+    private static final String ID_KEY = "id";
+    private static final String TYPE_KEY = "type";
+    private static final String CLIENT_KEY = "client";
 
     @Value("${jwt.secret-key}")
     private String secretKeyString;
@@ -49,9 +42,6 @@ public class JwtTokenProvider {
     private long refreshTokenExpirationTime;
 
     private SecretKey secretKey;
-
-    private final EmployeeUserDetailsService employeeUserDetailsService;
-    private final ClientEmployeeUserDetailsService clientEmployeeUserDetailsService;
 
     @PostConstruct
     public void init() {
@@ -69,12 +59,10 @@ public class JwtTokenProvider {
         final String accessToken = Jwts.builder()
                 .subject(customUserDetails.getUsername())
                 .claim(AUTHORITIES_KEY, authorities)
-                .claim(CLIENT_ID_KEY, customUserDetails.getClientId())
-                .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
-                .claim(POSITION_KEY, customUserDetails.getPosition())
-                .claim(RANK_KEY, customUserDetails.getRank())
-                .claim(DEPARTMENT_KEY, customUserDetails.getDepartment())
+                .claim(TYPE_KEY, customUserDetails.getType().name())
                 .claim(ID_KEY, customUserDetails.getId())
+                .claim(CLIENT_KEY, customUserDetails.getClientId())
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
                 .signWith(secretKey)
                 .compact();
 
@@ -86,6 +74,7 @@ public class JwtTokenProvider {
 
         final String refreshToken = Jwts.builder()
                 .subject(customUserDetails.getUsername())
+                .claim(ID_KEY, customUserDetails.getId())
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpirationTime))
                 .signWith(secretKey)
                 .compact();
@@ -102,12 +91,11 @@ public class JwtTokenProvider {
     }
 
     public String extractEmail(final String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return parseClaims(token).getSubject();
+    }
+
+    public Type extractType(final String token) {
+        return Type.valueOf(parseClaims(token).get(TYPE_KEY).toString());
     }
 
     public Authentication getAuthentication(final String token) {
@@ -117,19 +105,21 @@ public class JwtTokenProvider {
             throw new InvalidTokenException();
         }
 
-        List<GrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        final List<GrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        final String username = claims.getSubject();
+        final Type type = extractType(token);
 
-        UserDetails userDetails;
+        final int id = ((Number) claims.get(ID_KEY)).intValue();
 
-        if (claims.get(AUTHORITIES_KEY).toString().equals(CLIENT_PERMISSION)) {
-            userDetails = clientEmployeeUserDetailsService.loadUserByUsername(username);
-        } else {
-            userDetails = employeeUserDetailsService.loadUserByUsername(username);
-        }
+        final String email = extractEmail(token);
+
+        final Integer clientId = (Integer) claims.get(CLIENT_KEY);
+
+        final List<String> permissionList = Arrays.asList(claims.get(AUTHORITIES_KEY).toString().split(","));
+
+        final CustomUserDetails userDetails = new CustomUserDetails(type, id, email, clientId, permissionList);
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
@@ -137,19 +127,18 @@ public class JwtTokenProvider {
     public boolean validateToken(final String accessToken) {
         try {
             parseClaims(accessToken);
-
             return true;
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
-            log.error("Invalid JWT Token: {}", e);
+            log.error("Invalid JWT Token: {}", e.getMessage());
             throw new InvalidTokenException();
         } catch (ExpiredJwtException e) {
-            log.error("Expired JWT Token: {}", e);
+            log.error("Expired JWT Token: {}", e.getMessage());
             throw new ExpiredTokenException();
         } catch (SignatureException e) {
-            log.error("Signature Exception: {}", e);
+            log.error("Signature Exception: {}", e.getMessage());
             throw new InvalidTokenException();
         } catch (JwtException e) {
-            log.error("Jwt exception: {}", e);
+            log.error("Jwt exception: {}", e.getMessage());
             throw new InvalidTokenException();
         }
     }

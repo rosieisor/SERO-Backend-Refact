@@ -53,8 +53,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
     @Transactional
     @Override
-    public ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
+    public ApprovalResponseDTO submitForApproval(final int employeeId, final ApprovalCreateRequestDTO requestDTO,
                                                  final List<MultipartFile> files) {
+        final Employee employee = findEmployeeId(employeeId);
+
         validateDuplicateApproval(requestDTO.getRefCode());
 
         validateApprovalLines(requestDTO.getApprovalLines());
@@ -102,7 +104,9 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
     @Transactional
     @Override
-    public void approve(final Employee employee, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+    public void approve(final int employeeId, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+        final Employee employee = findEmployeeId(employeeId);
+
         final Approval approval = findApprovalById(approvalId);
 
         final ApprovalLine approvalLine = findApprovalLineByApprovalAndEmployee(approval, employee);
@@ -132,7 +136,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
     @Transactional
     @Override
-    public void reject(final Employee employee, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+    public void reject(final int employeeId, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+        final Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         final Approval approval = findApprovalById(approvalId);
 
         final ApprovalLine approvalLine = findApprovalLineByApprovalAndEmployee(approval, employee);
@@ -195,7 +202,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
                 so.updateApprovalInfo(so.getApprovalCode(), (isRejected ? "ORD_APPR_RJCT" : "ORD_APPR_DONE"));
 
-                if(!isRejected){
+                if (!isRejected) {
                     eventPublisher.publishEvent(NotificationEvent.forClient(
                             NotificationType.ORDER,
                             "주문 상태 변경",
@@ -403,4 +410,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         }
     }
 
+    private Employee findEmployeeId(final int employeeId) {
+        return employeeRepository.findByIdAndStatus(employeeId, "ES_ACT").orElseThrow(EmployeeNotFoundException::new);
+    }
 }

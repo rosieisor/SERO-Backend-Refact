@@ -70,7 +70,10 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
     @Override
     @Transactional
-    public GICreateResponseDTO createGoodsIssue(GICreateRequestDTO requestDTO, Employee drafter) {
+    public GICreateResponseDTO createGoodsIssue(GICreateRequestDTO requestDTO, int drafterId) {
+        Employee drafter = employeeRepository.findById(drafterId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
         // 1. 중복 검증 - 이미 출고지시가 생성된 납품서인지 확인
         if (goodsIssueRepository.existsByDoCode(requestDTO.getDoCode())) {
             throw new GoodsIssueAlreadyExistsException();

@@ -1,7 +1,7 @@
 package com.werp.sero.shipping.command.application.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.shipping.command.application.service.DeliveryCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,9 +24,9 @@ public class DeliveryCommandController {
     @Operation(summary = "배송 시작", description = "출고 완료된 배송을 '배송중' 상태로 변경합니다.")
     public ResponseEntity<Map<String, String>> startDelivery(
             @RequestParam String giCode,
-            @CurrentUser Employee driver
+            @CurrentUser CustomUserDetails user
     ) {
-        deliveryCommandService.startDelivery(giCode, driver);
+        deliveryCommandService.startDelivery(giCode, user.getId());
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "배송이 시작되었습니다.");
@@ -39,9 +39,9 @@ public class DeliveryCommandController {
     @Operation(summary = "배송 완료", description = "배송중인 배송을 '배송 완료' 상태로 변경합니다.")
     public ResponseEntity<Map<String, String>> completeDelivery(
             @RequestParam String giCode,
-            @CurrentUser Employee driver
+            @CurrentUser CustomUserDetails user
     ) {
-        deliveryCommandService.completeDelivery(giCode, driver);
+        deliveryCommandService.completeDelivery(giCode, user.getId());
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "배송이 완료되었습니다.");

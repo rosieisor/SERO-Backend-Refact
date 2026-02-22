@@ -3,6 +3,8 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -44,10 +46,14 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
     private final SOStateService soStateService;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     @Transactional
-    public String createDeliveryOrder(DOCreateRequestDTO requestDTO, Employee manager) {
+    public String createDeliveryOrder(DOCreateRequestDTO requestDTO, int managerId) {
+        Employee manager = employeeRepository.findById(managerId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         // 1. 주문 조회
         SalesOrder salesOrder = soRepository.findById(requestDTO.getSoId())
                 .orElseThrow(SalesOrderNotFoundException::new);

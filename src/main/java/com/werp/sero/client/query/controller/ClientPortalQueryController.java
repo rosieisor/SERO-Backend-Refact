@@ -1,13 +1,10 @@
 package com.werp.sero.client.query.controller;
 
-import com.werp.sero.client.query.dto.ClientDetailResponseDTO;
 import com.werp.sero.client.query.dto.ClientItemPriceHistoryResponseDTO;
 import com.werp.sero.client.query.dto.ClientItemResponseDTO;
 import com.werp.sero.client.query.dto.ClientPortalDetailResponseDTO;
 import com.werp.sero.client.query.service.ClientItemQueryService;
 import com.werp.sero.client.query.service.ClientQueryService;
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

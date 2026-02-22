@@ -3,8 +3,8 @@ package com.werp.sero.approval.command.application.controller;
 import com.werp.sero.approval.command.application.dto.ApprovalTemplateCreateRequestDTO;
 import com.werp.sero.approval.command.application.dto.ApprovalTemplateResponseDTO;
 import com.werp.sero.approval.command.application.service.ApprovalTemplateService;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,16 +21,16 @@ public class ApprovalTemplateController {
 
     @Operation(summary = "결재선 템플릿 등록")
     @PostMapping
-    public ResponseEntity<ApprovalTemplateResponseDTO> registerApprovalTemplate(@CurrentUser final Employee employee,
+    public ResponseEntity<ApprovalTemplateResponseDTO> registerApprovalTemplate(@CurrentUser final CustomUserDetails user,
                                                                                 @Valid @RequestBody ApprovalTemplateCreateRequestDTO requestDTO) {
-        return ResponseEntity.ok(approvalTemplateService.registerApprovalTemplate(employee, requestDTO));
+        return ResponseEntity.ok(approvalTemplateService.registerApprovalTemplate(user.getId(), requestDTO));
     }
 
     @Operation(summary = "결재선 템플릿 삭제")
     @DeleteMapping("/{approvalTemplateId}")
-    public ResponseEntity<Void> deleteApprovalTemplate(@CurrentUser final Employee employee,
+    public ResponseEntity<Void> deleteApprovalTemplate(@CurrentUser final CustomUserDetails user,
                                                        @PathVariable("approvalTemplateId") int approvalTemplateId) {
-        approvalTemplateService.deleteApprovalTemplate(employee, approvalTemplateId);
+        approvalTemplateService.deleteApprovalTemplate(user.getId(), approvalTemplateId);
 
         return ResponseEntity.noContent().build();
     }

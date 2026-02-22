@@ -4,7 +4,6 @@ import com.werp.sero.approval.exception.ApprovalTemplateNotFoundException;
 import com.werp.sero.approval.query.dao.ApprovalTemplateMapper;
 import com.werp.sero.approval.query.dto.ApprovalTemplateInfoResponseDTO;
 import com.werp.sero.approval.query.dto.ApprovalTemplateLineInfoResponseDTO;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +22,9 @@ public class ApprovalTemplateQueryServiceImpl implements ApprovalTemplateQuerySe
     private final ApprovalTemplateMapper approvalTemplateMapper;
 
     @Override
-    public List<ApprovalTemplateInfoResponseDTO> getApprovalTemplates(final Employee employee) {
+    public List<ApprovalTemplateInfoResponseDTO> getApprovalTemplates(final int employeeId) {
         final List<ApprovalTemplateInfoResponseDTO> responseDTO =
-                approvalTemplateMapper.findApprovalTemplatesByEmployee(employee.getId());
+                approvalTemplateMapper.findApprovalTemplatesByEmployee(employeeId);
 
         responseDTO.forEach(response -> {
             final List<ApprovalTemplateLineInfoResponseDTO> approvalLines = response.getTotalApprovalLines().stream()
@@ -51,9 +50,9 @@ public class ApprovalTemplateQueryServiceImpl implements ApprovalTemplateQuerySe
     }
 
     @Override
-    public ApprovalTemplateInfoResponseDTO getApprovalTemplateById(Employee employee, int approvalTemplateId) {
+    public ApprovalTemplateInfoResponseDTO getApprovalTemplateById(int employeeId, int approvalTemplateId) {
         final ApprovalTemplateInfoResponseDTO responseDTO =
-                approvalTemplateMapper.findApprovalTemplateById(employee.getId(), approvalTemplateId);
+                approvalTemplateMapper.findApprovalTemplateById(employeeId, approvalTemplateId);
 
         if (responseDTO == null) {
             throw new ApprovalTemplateNotFoundException();

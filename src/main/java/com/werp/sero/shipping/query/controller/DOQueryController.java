@@ -2,8 +2,8 @@ package com.werp.sero.shipping.query.controller;
 
 import com.werp.sero.common.security.AccessType;
 import com.werp.sero.common.security.RequirePermission;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
 import com.werp.sero.shipping.query.dto.DOListResponseDTO;
 import com.werp.sero.shipping.query.service.DODetailQueryService;
@@ -34,12 +34,12 @@ public class DOQueryController {
     public ResponseEntity<List<DOListResponseDTO>> getDeliveryOrdersByStatus(
             @Parameter(description = "납품서 상태 (선택사항)", example = "DO_BEFORE_GI")
             @RequestParam(required = false) String status,
-            @CurrentUser Employee employee
+            @CurrentUser CustomUserDetails user
     ) {
         List<DOListResponseDTO> response;
         if (status != null && !status.isEmpty()) {
             // 상태 필터가 있으면 담당자별로 필터링 (출고지시 작성용)
-            response = DODetailQueryService.getDeliveryOrdersByStatusAndManager(status, employee.getId());
+            response = DODetailQueryService.getDeliveryOrdersByStatusAndManager(status, user.getId());
         } else {
             // 상태 필터 없으면 전체 조회 (납품서 관리 페이지용)
             response = DODetailQueryService.getAllDeliveryOrders();

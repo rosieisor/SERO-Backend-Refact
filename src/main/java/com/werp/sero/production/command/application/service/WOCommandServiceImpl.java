@@ -2,6 +2,8 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.BomRepository;
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
 public class WOCommandServiceImpl implements WOCommandService {
     private final PPRepository ppRepository;
     private final WORepository woRepository;
+    private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final WorkOrderResultRepository workOrderResultRepository;
     private final WorkOrderHistoryRepository workOrderHistoryRepository;
@@ -59,8 +62,10 @@ public class WOCommandServiceImpl implements WOCommandService {
     @Transactional
     public void createWorkOrder(
             WorkOrderCreateRequestDTO request,
-            Employee currentEmployee
+            int employeeId
     ) {
+        Employee currentEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new InvalidWorkOrderRequestException();
         }
@@ -178,7 +183,10 @@ public class WOCommandServiceImpl implements WOCommandService {
 
     @Override
     @Transactional
-    public void start(int woId, String note, Employee worker) {
+    public void start(int woId, String note, int employeeId) {
+        Employee worker = employeeRepository.findById(employeeId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
                 .orElseThrow(WorkOrderNotFoundException::new);
 
@@ -229,7 +237,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     public void end(
             int woId,
             WorkOrderEndRequest request,
-            Employee currentEmployee
+            int employeeId
     ) {
 
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
@@ -340,7 +348,7 @@ public class WOCommandServiceImpl implements WOCommandService {
                     SalesOrderItemHistory.createForProductionIn(
                             soItemId,
                             qty,  // 이번 생산입고 수량만 저장 (증가분)
-                            currentEmployee.getId(),
+                            employeeId,
                             null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
                     );
 

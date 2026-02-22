@@ -1,96 +1,60 @@
 package com.werp.sero.security.principal;
 
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.enums.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomUserDetails implements UserDetails {
-    private final Employee employee;
-    private final ClientEmployee clientEmployee;
-    private final List<String> permissions;
+    private final int id;
+    private final String email;
     private final Type type;
+    private final Integer clientId;
+    private final List<String> permissions;
 
-    public CustomUserDetails(final Employee employee, final List<String> permissions) {
-        this.employee = employee;
+    public CustomUserDetails(final Type type, final int id, final String email, final Integer clientId,
+                             final List<String> permissions) {
+        this.type = type;
+        this.id = id;
+        this.email = email;
+        this.clientId = clientId;
         this.permissions = permissions;
-        this.clientEmployee = null;
-        this.type = Type.EMPLOYEE;
-    }
-
-    public CustomUserDetails(final ClientEmployee clientEmployee, final List<String> permissions) {
-        this.employee = null;
-        this.clientEmployee = clientEmployee;
-        this.permissions = permissions;
-        this.type = Type.CLIENT_EMPLOYEE;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        final List<GrantedAuthority> authorities = new ArrayList<>();
-
-        permissions.forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission)));
-
-        return authorities;
+        return permissions.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     @Override
     public String getPassword() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getPassword() : this.clientEmployee.getPassword();
+        return "";
     }
 
     @Override
     public String getUsername() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getEmail() : this.clientEmployee.getEmail();
+        return this.email;
     }
 
     public Type getType() {
-        return type;
-    }
-
-    public ClientEmployee getClientEmployee() {
-        return clientEmployee;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public boolean isEmployee() {
-        return (this.type == Type.EMPLOYEE) ? true : false;
-    }
-
-    public String getPosition() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getPositionCode() : this.clientEmployee.getPosition();
-    }
-
-    public String getName() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getName() : this.clientEmployee.getName();
+        return this.type;
     }
 
     public int getId() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getId() : this.clientEmployee.getId();
+        return this.id;
     }
 
-    public String getDepartment() {
-        if (this.type == Type.EMPLOYEE && this.employee.getDepartment() != null) {
-            return this.employee.getDepartment().getDeptCode();
-        }
-
-        return null;
-    }
-
-    public String getRank() {
-        return (this.type == Type.EMPLOYEE) ? this.employee.getRankCode() : null;
+    public boolean isEmployee() {
+        return this.type == Type.EMPLOYEE;
     }
 
     public Integer getClientId() {
-        return (this.type == Type.CLIENT_EMPLOYEE) ? this.clientEmployee.getClient().getId() : null;
+        return this.clientId;
     }
 }

@@ -1,31 +1,30 @@
 package com.werp.sero.approval.query.service;
 
 import com.werp.sero.approval.query.dto.*;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import org.springframework.data.domain.Pageable;
 
 public interface ApprovalQueryService {
-    ApprovalListResponseDTO getSubmittedApprovals(final Employee employee,
+    ApprovalListResponseDTO getSubmittedApprovals(final int employeeId,
                                                   final SubmittedApprovalFilterRequestDTO filterDTO,
                                                   final Pageable pageable);
 
-    ApprovalListResponseDTO getArchivedApprovals(final Employee employee,
+    ApprovalListResponseDTO getArchivedApprovals(final int employeeId,
                                                  final ArchivedApprovalFilterRequestDTO filterDTO,
                                                  final Pageable pageable);
 
-    ApprovalListResponseDTO getReceivedApprovals(final Employee employee,
+    ApprovalListResponseDTO getReceivedApprovals(final int employeeId,
                                                  final ReceivedApprovalFilterRequestDTO filterDTO,
                                                  final Pageable pageable);
 
-    ApprovalListResponseDTO getReferencedApprovals(final Employee employee,
+    ApprovalListResponseDTO getReferencedApprovals(final int employeeId,
                                                    final ReferencedApprovalFilterRequestDTO filterDTO,
                                                    final Pageable pageable);
 
-    ApprovalListResponseDTO getRequestedApprovals(final Employee employee,
+    ApprovalListResponseDTO getRequestedApprovals(final int employeeId,
                                                   final RequestedApprovalFilterRequestDTO filterDTO,
                                                   final Pageable pageable);
 
-    ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId);
+    ApprovalDetailResponseDTO getApprovalInfo(final int employeeId, final int approvalId);
 
     ApprovalLineSummaryInfoResponseDTO getApprovalSummaryInfo(final String approvalCode);
 }

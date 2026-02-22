@@ -1,11 +1,11 @@
 package com.werp.sero.production.command.application.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
+import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.production.command.application.dto.PRDraftUpdateRequestDTO;
 import com.werp.sero.production.command.application.dto.PRManagerAssignRequestDTO;
 import com.werp.sero.production.command.application.service.PRCommandService;
-import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,7 +30,7 @@ public class PRCommandController {
             summary = "생산요청 임시저장 생성",
             description = """
                     수주(SO)를 기준으로 생산요청을 임시저장(PR_TMP) 상태로 생성합니다.
-                            
+                    
                     - 최초 생성 시 상태는 PR_TMP(임시저장)
                     - 품목 정보는 선택 사항
                     """
@@ -38,47 +38,47 @@ public class PRCommandController {
     @PostMapping("/draft")
     public ResponseEntity<Integer> createDraft(
             @RequestBody PRDraftCreateRequestDTO dto,
-            @CurrentUser Employee currentEmployee
-            ) {
-        int prId = PRCommandService.createDraft(dto, currentEmployee);
+            @CurrentUser CustomUserDetails user
+    ) {
+        int prId = PRCommandService.createDraft(dto, user.getId());
         return ResponseEntity.ok(prId);
     }
 
     @Operation(
             summary = "임시 저장된 생산요청 수정",
             description = """
-                임시 저장(PR_TMP) 상태의 생산요청을 수정합니다.
-                
-                - 작성자(drafter)만 수정 가능
-                - 수정 가능 항목: 납기일(dueAt), 사유(reason), 품목별 생산요청 수량(items)
-                """
+                    임시 저장(PR_TMP) 상태의 생산요청을 수정합니다.
+                    
+                    - 작성자(drafter)만 수정 가능
+                    - 수정 가능 항목: 납기일(dueAt), 사유(reason), 품목별 생산요청 수량(items)
+                    """
     )
     @PutMapping("/drafts/{prId}")
     public ResponseEntity<Void> updateDraft(
             @PathVariable int prId,
             @RequestBody PRDraftUpdateRequestDTO dto,
-            @CurrentUser Employee currentEmployee
+            @CurrentUser CustomUserDetails user
     ) {
-        PRCommandService.updateDraft(prId, dto, currentEmployee);
+        PRCommandService.updateDraft(prId, dto, user.getId());
         return ResponseEntity.ok().build();
     }
 
     @Operation(
             summary = "임시 저장된 생산요청 요청",
             description = """
-                임시 저장(PR_TMP) 상태의 생산요청을 실제 생산요청으로 확정합니다.
-
-                - 작성자 본인만 요청 가능
-                - 임시 저장 상태(PR_TMP)에서만 요청 가능
-                - 생산요청 수량(totalQuantity)이 0 초과여야 합니다.
-                """
+                    임시 저장(PR_TMP) 상태의 생산요청을 실제 생산요청으로 확정합니다.
+                    
+                    - 작성자 본인만 요청 가능
+                    - 임시 저장 상태(PR_TMP)에서만 요청 가능
+                    - 생산요청 수량(totalQuantity)이 0 초과여야 합니다.
+                    """
     )
     @PostMapping("/{prId}/request")
     public ResponseEntity<Void> requestProduction(
             @PathVariable int prId,
-            @CurrentUser Employee employee
+            @CurrentUser CustomUserDetails user
     ) {
-        PRCommandService.request(prId, employee);
+        PRCommandService.request(prId, user.getId());
         return ResponseEntity.ok().build();
     }
 

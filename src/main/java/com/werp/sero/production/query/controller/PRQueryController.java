@@ -1,9 +1,9 @@
 package com.werp.sero.production.query.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.query.dto.*;
-import com.werp.sero.production.query.service.PRQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.production.query.service.PRQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,12 +30,12 @@ public class PRQueryController {
     )
     @GetMapping("/drafts")
     public ResponseEntity<List<PRDraftListResponseDTO>> getDrafts(
-            @CurrentUser Employee employee,
+            @CurrentUser CustomUserDetails user,
             @RequestParam(required = false) Integer soId,
             @RequestParam(required = false) String soCode
     ) {
         List<PRDraftListResponseDTO> result =
-                prQueryService.getDraftsByDrafter(employee.getId(), soId, soCode);
+                prQueryService.getDraftsByDrafter(user.getId(), soId, soCode);
         return ResponseEntity.ok(result);
     }
 
@@ -46,10 +46,10 @@ public class PRQueryController {
     @GetMapping("/drafts/{prId}")
     public ResponseEntity<PRDraftDetailResponseDTO> getDraftDetail(
             @PathVariable int prId,
-            @CurrentUser Employee employee
+            @CurrentUser CustomUserDetails user
     ) {
         return ResponseEntity.ok(
-                prQueryService.getDraftDetail(prId, employee.getId())
+                prQueryService.getDraftDetail(prId, user.getId())
         );
     }
 
@@ -119,9 +119,9 @@ public class PRQueryController {
     @Operation(
             summary = "생산계획 수립 대상 PR Item 목록 조회",
             description = """
-                특정 생산요청(PR)에 대해 생산계획을 수립할 수 있는 PR Item 목록을 조회합니다.
-                각 PR Item별로 요청 수량, 기계획 수량, 잔여 수량 정보를 포함하며, 생산계획 수립 전 단계에서 사용됩니다.
-                """
+                    특정 생산요청(PR)에 대해 생산계획을 수립할 수 있는 PR Item 목록을 조회합니다.
+                    각 PR Item별로 요청 수량, 기계획 수량, 잔여 수량 정보를 포함하며, 생산계획 수립 전 단계에서 사용됩니다.
+                    """
     )
     @GetMapping("/{prId}/plan-items")
     public ResponseEntity<PRPlanItemListResponseDTO> getPlanItems(
@@ -135,9 +135,9 @@ public class PRQueryController {
     @Operation(
             summary = "주문 id를 통한 생산 요청 조회",
             description = """
-               주문 상세조회에서 해당 주문에 해당하는 생산 요청 목록을 조회합니다.
-               상태가 임시저장인 것과 확정된 생산요청 모두 조회할 수 있습니다.
-                """
+                    주문 상세조회에서 해당 주문에 해당하는 생산 요청 목록을 조회합니다.
+                    상태가 임시저장인 것과 확정된 생산요청 모두 조회할 수 있습니다.
+                    """
     )
     @GetMapping("/search/{orderId}")
     public ResponseEntity<List<PRListResponseDTO>> getListByOrderId(

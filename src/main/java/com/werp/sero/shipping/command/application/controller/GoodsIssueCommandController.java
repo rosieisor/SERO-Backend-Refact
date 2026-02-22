@@ -1,7 +1,7 @@
 package com.werp.sero.shipping.command.application.controller;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
@@ -111,7 +111,7 @@ public class GoodsIssueCommandController {
             summary = "출고지시 작성",
             description = """
                     납품서(Delivery Order)를 기준으로 출고지시를 작성합니다.
-
+                    
                     - 납품서 번호로 납품서 정보를 조회합니다
                     - 납품서의 모든 품목이 출고지시 품목으로 자동 포함됩니다
                     - 출고 창고를 선택해야 합니다
@@ -185,9 +185,9 @@ public class GoodsIssueCommandController {
     @PostMapping
     public ResponseEntity<GICreateResponseDTO> createGoodsIssue(
             @Valid @RequestBody GICreateRequestDTO requestDTO,
-            @CurrentUser Employee currentEmployee
+            @CurrentUser CustomUserDetails user
     ) {
-        GICreateResponseDTO response = goodsIssueCommandService.createGoodsIssue(requestDTO, currentEmployee);
+        GICreateResponseDTO response = goodsIssueCommandService.createGoodsIssue(requestDTO, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
