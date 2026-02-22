@@ -3,10 +3,14 @@ package com.werp.sero.auth.service;
 import com.werp.sero.auth.dto.LoginRequestDTO;
 import com.werp.sero.auth.dto.LoginResponseDTO;
 import com.werp.sero.auth.exception.LoginFailedException;
+import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.ClientEmployeeRepository;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.permission.command.domain.repository.EmployeePermissionRepository;
 import com.werp.sero.security.dto.JwtToken;
 import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.JwtTokenProvider;
-import com.werp.sero.security.jwt.exception.ExpiredTokenException;
 import com.werp.sero.security.jwt.exception.InvalidTokenException;
 import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.util.CookieUtil;
@@ -15,67 +19,50 @@ import com.werp.sero.util.RedisUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
+    private static final String BLACK_LIST_PREFIX = "BL:";
     private static final String GRANT_TYPE = "Bearer";
 
     private final RedisUtil redisUtil;
     private final CookieUtil cookieUtil;
     private final JwtTokenProvider jwtTokenProvider;
-    private final AuthenticationManager employeeAuthenticationManager;
-    private final AuthenticationManager clientEmployeeAuthenticationManager;
-
-    @Autowired
-    public AuthServiceImpl(final RedisUtil redisUtil, final CookieUtil cookieUtil,
-                           final JwtTokenProvider jwtTokenProvider, final AuthenticationManager employeeAuthenticationManager,
-                           @Qualifier("clientEmployeeAuthenticationManager") final AuthenticationManager clientEmployeeAuthenticationManager) {
-        this.redisUtil = redisUtil;
-        this.cookieUtil = cookieUtil;
-        this.employeeAuthenticationManager = employeeAuthenticationManager;
-        this.clientEmployeeAuthenticationManager = clientEmployeeAuthenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
+    private final PasswordEncoder passwordEncoder;
+    private final EmployeeRepository employeeRepository;
+    private final ClientEmployeeRepository clientEmployeeRepository;
+    private final EmployeePermissionRepository employeePermissionRepository;
 
     @Transactional
     @Override
     public LoginResponseDTO login(final LoginRequestDTO requestDTO, final HttpServletResponse response,
                                   final Type type) {
-        try {
-            final UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(requestDTO.getEmail(), requestDTO.getPassword());
+        final CustomUserDetails userDetails =
+                authenticateAndGetUserDetails(requestDTO.getEmail(), requestDTO.getPassword(), type);
 
-            final Authentication authentication = authenticate(type, authenticationToken);
+        final Authentication authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            final JwtToken accessToken = jwtTokenProvider.generateAccessToken(authentication);
+        final JwtToken accessToken = jwtTokenProvider.generateAccessToken(authentication);
+        final JwtToken refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
-            final JwtToken refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+        redisUtil.setData(REFRESH_TOKEN_PREFIX + requestDTO.getEmail(), refreshToken.getToken(),
+                refreshToken.getExpirationTime(), TimeUnit.MILLISECONDS);
 
-            redisUtil.setData(REFRESH_TOKEN_PREFIX + requestDTO.getEmail(), refreshToken.getToken(),
-                    refreshToken.getExpirationTime(), TimeUnit.MILLISECONDS);
+        cookieUtil.generateRefreshTokenCookie(response, refreshToken);
 
-            cookieUtil.generateRefreshTokenCookie(response, refreshToken);
-
-            final String employeeName = ((CustomUserDetails) authentication.getPrincipal()).getName();
-
-            return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE,
-                    accessToken.getAuthorities(), employeeName);
-        } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
-            throw new LoginFailedException();
-        }
+        return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE, accessToken.getAuthorities());
     }
 
     @Transactional
@@ -98,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
 
             final long expirationTime = jwtTokenProvider.getExpirationTime(accessToken) - System.currentTimeMillis();
 
-            redisUtil.setData(accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
+            redisUtil.setData(accessToken, BLACK_LIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
         } catch (JwtException e) {
             throw new JwtException(e.getMessage());
         }
@@ -106,47 +93,77 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     @Override
-    public LoginResponseDTO reissue(final CustomUserDetails customUserDetails, final String cookieRefreshToken,
-                                    final HttpServletResponse response) {
-        validateRefreshToken(cookieRefreshToken, customUserDetails.getUsername());
+    public LoginResponseDTO reissue(final String cookieRefreshToken, final HttpServletResponse response,
+                                    final Type type) {
+        jwtTokenProvider.validateToken(cookieRefreshToken);
 
-        final Authentication authentication = new UsernamePasswordAuthenticationToken(customUserDetails,
-                null, customUserDetails.getAuthorities());
+        final String email = jwtTokenProvider.extractEmail(cookieRefreshToken);
+
+        final String storedRefreshToken = redisUtil.getData(REFRESH_TOKEN_PREFIX + email);
+
+        if (storedRefreshToken == null || !storedRefreshToken.equals(cookieRefreshToken)) {
+            throw new InvalidTokenException();
+        }
+
+        final CustomUserDetails userDetails = getUserDetailsForReissue(email, type);
+
+        final Authentication authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         final JwtToken accessToken = jwtTokenProvider.generateAccessToken(authentication);
 
         final JwtToken refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
-        final CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-
-        redisUtil.setData(REFRESH_TOKEN_PREFIX + principal.getUsername(), refreshToken.getToken(),
+        redisUtil.setData(REFRESH_TOKEN_PREFIX + email, refreshToken.getToken(),
                 refreshToken.getExpirationTime(), TimeUnit.MILLISECONDS);
 
         cookieUtil.generateRefreshTokenCookie(response, refreshToken);
 
-        return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE, accessToken.getAuthorities(), principal.getName());
+        return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE, accessToken.getAuthorities());
     }
 
-    private void validateRefreshToken(final String refreshToken, final String username) {
-        final String redisRefreshToken = redisUtil.getData(REFRESH_TOKEN_PREFIX + username);
+    private CustomUserDetails authenticateAndGetUserDetails(final String email, final String rawPassword,
+                                                            final Type type) {
+        if (type == Type.EMPLOYEE) {
+            final Employee employee = employeeRepository.findByEmailAndStatus(email, "ES_ACT")
+                    .orElseThrow(LoginFailedException::new);
 
-        if (redisRefreshToken == null || refreshToken == null) {
-            throw new ExpiredTokenException();
+            matchRawPasswordAndEncodedPassword(rawPassword, employee.getPassword());
+
+            return buildFromEmployee(employee);
         }
 
-        jwtTokenProvider.validateToken(redisRefreshToken);
+        final ClientEmployee clientEmployee = clientEmployeeRepository.findByEmail(email)
+                .orElseThrow(LoginFailedException::new);
 
-        if (!refreshToken.equals(redisRefreshToken)) {
-            throw new InvalidTokenException();
-        }
+        matchRawPasswordAndEncodedPassword(rawPassword, clientEmployee.getPassword());
+
+        return buildFromClientEmployee(clientEmployee);
     }
 
-    private Authentication authenticate(final Type type,
-                                        final UsernamePasswordAuthenticationToken authenticationToken) {
-        if (type.equals(Type.EMPLOYEE)) {
-            return employeeAuthenticationManager.authenticate(authenticationToken);
+    private CustomUserDetails getUserDetailsForReissue(final String email, final Type type) {
+        if (type == Type.EMPLOYEE) {
+            return buildFromEmployee(employeeRepository.findByEmailAndStatus(email, "ES_ACT")
+                    .orElseThrow(InvalidTokenException::new));
         }
 
-        return clientEmployeeAuthenticationManager.authenticate(authenticationToken);
+        return buildFromClientEmployee(clientEmployeeRepository.findByEmail(email)
+                .orElseThrow(InvalidTokenException::new));
+    }
+
+    private CustomUserDetails buildFromEmployee(final Employee employee) {
+        final List<String> permissions = employeePermissionRepository.findPermissionCodeByEmployee(employee);
+        return new CustomUserDetails(Type.EMPLOYEE, employee.getId(), employee.getEmail(), null, permissions);
+    }
+
+    private CustomUserDetails buildFromClientEmployee(final ClientEmployee clientEmployee) {
+        return new CustomUserDetails(Type.CLIENT_EMPLOYEE, clientEmployee.getId(), clientEmployee.getEmail(),
+                clientEmployee.getClient().getId(), List.of("AC_CLI"));
+    }
+
+    private void matchRawPasswordAndEncodedPassword(final String rawPassword, final String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new LoginFailedException();
+        }
     }
 }
