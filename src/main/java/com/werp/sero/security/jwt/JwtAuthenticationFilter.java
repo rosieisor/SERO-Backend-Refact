@@ -1,7 +1,6 @@
 package com.werp.sero.security.jwt;
 
 import com.werp.sero.util.HeaderUtil;
-import com.werp.sero.util.RedisUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +15,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisUtil redisUtil;
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
@@ -24,11 +22,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String accessToken = HeaderUtil.extractAccessTokenFromHeader(request);
 
         if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-            if (redisUtil.getData(accessToken) == null) {
-                final Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+            final Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);

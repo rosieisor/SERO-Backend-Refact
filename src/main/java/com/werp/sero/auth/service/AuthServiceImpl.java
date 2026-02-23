@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AuthServiceImpl implements AuthService {
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
-    private static final String BLACK_LIST_PREFIX = "BL:";
     private static final String GRANT_TYPE = "Bearer";
 
     private final RedisUtil redisUtil;
@@ -77,15 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
             final String email = jwtTokenProvider.extractEmail(accessToken);
 
-            final String refreshToken = redisUtil.getData(REFRESH_TOKEN_PREFIX + email);
-
-            if (refreshToken != null) {
-                redisUtil.deleteData(REFRESH_TOKEN_PREFIX + email);
-            }
-
-            final long expirationTime = jwtTokenProvider.getExpirationTime(accessToken) - System.currentTimeMillis();
-
-            redisUtil.setData(accessToken, BLACK_LIST_PREFIX, expirationTime, TimeUnit.MILLISECONDS);
+            redisUtil.deleteData(REFRESH_TOKEN_PREFIX + email);
         } catch (JwtException e) {
             throw new JwtException(e.getMessage());
         }
