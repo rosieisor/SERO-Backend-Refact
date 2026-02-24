@@ -1,10 +1,11 @@
 package com.werp.sero.security.jwt;
 
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.security.dto.JwtToken;
 import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.exception.ExpiredTokenException;
 import com.werp.sero.security.jwt.exception.InvalidTokenException;
+import com.werp.sero.security.userdetails.JwtUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -50,18 +51,18 @@ public class JwtTokenProvider {
     }
 
     public JwtToken generateAccessToken(final Authentication authentication) {
-        final CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        final CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        final String authorities = authentication.getAuthorities().stream()
+        final String authorities = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
         final String accessToken = Jwts.builder()
-                .subject(customUserDetails.getUsername())
+                .subject(userDetails.getUsername())
                 .claim(AUTHORITIES_KEY, authorities)
-                .claim(TYPE_KEY, customUserDetails.getType().name())
-                .claim(ID_KEY, customUserDetails.getId())
-                .claim(CLIENT_KEY, customUserDetails.getClientId())
+                .claim(TYPE_KEY, userDetails.getType().name())
+                .claim(ID_KEY, userDetails.getId())
+                .claim(CLIENT_KEY, userDetails.getClientId())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
                 .signWith(secretKey)
                 .compact();
@@ -119,7 +120,7 @@ public class JwtTokenProvider {
 
         final List<String> permissionList = Arrays.asList(claims.get(AUTHORITIES_KEY).toString().split(","));
 
-        final CustomUserDetails userDetails = new CustomUserDetails(type, id, email, clientId, permissionList);
+        final JwtUserDetails userDetails = new JwtUserDetails(id, email, clientId, type, permissionList);
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }

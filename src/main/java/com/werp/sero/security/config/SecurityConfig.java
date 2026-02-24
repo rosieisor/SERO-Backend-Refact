@@ -1,13 +1,22 @@
 package com.werp.sero.security.config;
 
+import com.werp.sero.employee.command.domain.repository.ClientEmployeeRepository;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.permission.command.domain.repository.EmployeePermissionRepository;
 import com.werp.sero.security.handler.CustomAccessDeniedHandler;
 import com.werp.sero.security.handler.CustomAuthenticationEntryPoint;
 import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;
+import com.werp.sero.security.provider.ClientEmployeeAuthenticationProvider;
+import com.werp.sero.security.provider.EmployeeAuthenticationProvider;
+import com.werp.sero.security.userdetails.ClientEmployeeUserDetailsServiceImpl;
+import com.werp.sero.security.userdetails.EmployeeUserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -46,6 +55,35 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CorsConfigurationSource corsConfigurationSource;
+
+    @Bean
+    public ClientEmployeeAuthenticationProvider clientEmployeeAuthenticationProvider(final ClientEmployeeUserDetailsServiceImpl userDetailsService,
+                                                                                     final PasswordEncoder passwordEncoder) {
+        return new ClientEmployeeAuthenticationProvider(userDetailsService, passwordEncoder);
+    }
+
+    @Bean
+    public EmployeeAuthenticationProvider employeeAuthenticationProvider(final EmployeeUserDetailsServiceImpl userDetailsService,
+                                                                         final PasswordEncoder passwordEncoder) {
+        return new EmployeeAuthenticationProvider(userDetailsService, passwordEncoder);
+    }
+
+    @Bean
+    public ClientEmployeeUserDetailsServiceImpl clientEmployeeUserDetailsService(final ClientEmployeeRepository clientEmployeeRepository) {
+        return new ClientEmployeeUserDetailsServiceImpl(clientEmployeeRepository);
+    }
+
+    @Bean
+    public EmployeeUserDetailsServiceImpl EmployeeUserDetailsService(final EmployeeRepository employeeRepository,
+                                                                     final EmployeePermissionRepository employeePermissionRepository) {
+        return new EmployeeUserDetailsServiceImpl(employeeRepository, employeePermissionRepository);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(final EmployeeAuthenticationProvider employeeAuthenticationProvider,
+                                                       final ClientEmployeeAuthenticationProvider clientEmployeeAuthenticationProvider) {
+        return new ProviderManager(employeeAuthenticationProvider, clientEmployeeAuthenticationProvider);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
