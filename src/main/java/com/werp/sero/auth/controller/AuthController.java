@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
-    @Operation(summary = "본사 직원용 로그인", description = "- email : admin@werp.com\n- password : kang")
+    @Operation(summary = "본사 직원용 로그인", description = "- email : procurement01@hanwha.com\n- password : kang")
     @PostMapping("/auth/login")
     public ResponseEntity<LoginResponseDTO> loginEmployee(@Valid @RequestBody final LoginRequestDTO requestDTO,
                                                           final HttpServletResponse response) {

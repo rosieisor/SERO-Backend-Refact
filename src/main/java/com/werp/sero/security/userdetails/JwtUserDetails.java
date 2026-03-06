@@ -1,27 +1,26 @@
-package com.werp.sero.security.principal;
+package com.werp.sero.security.userdetails;
 
 import com.werp.sero.security.enums.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CustomUserDetails implements UserDetails {
+public class JwtUserDetails implements CustomUserDetails {
     private final int id;
     private final String email;
-    private final Type type;
     private final Integer clientId;
+    private final Type type;
     private final List<String> permissions;
 
-    public CustomUserDetails(final Type type, final int id, final String email, final Integer clientId,
-                             final List<String> permissions) {
-        this.type = type;
+    public JwtUserDetails(final int id, final String email, final Integer clientId, final Type type,
+                          final List<String> permissions) {
         this.id = id;
         this.email = email;
         this.clientId = clientId;
+        this.type = type;
         this.permissions = permissions;
     }
 
@@ -42,18 +41,17 @@ public class CustomUserDetails implements UserDetails {
         return this.email;
     }
 
-    public Type getType() {
-        return this.type;
-    }
-
+    @Override
     public int getId() {
         return this.id;
     }
 
-    public boolean isEmployee() {
-        return this.type == Type.EMPLOYEE;
+    @Override
+    public Type getType() {
+        return this.type;
     }
 
+    @Override
     public Integer getClientId() {
         return this.clientId;
     }
