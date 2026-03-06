@@ -3,8 +3,8 @@ package com.werp.sero.notice.command.application.service;
 import com.werp.sero.code.exception.CommonCodeNotFoundException;
 import com.werp.sero.code.query.dto.CommonCodeDetailManageDTO;
 import com.werp.sero.code.query.service.CommonCodeManageQueryService;
-import com.werp.sero.common.file.FileValidator;
-import com.werp.sero.common.file.S3Uploader;
+import com.werp.sero.file.service.FileUploader;
+import com.werp.sero.file.service.FileValidator;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
@@ -35,7 +35,7 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
 
     private final NoticeRepository noticeRepository;
     private final NoticeAttachmentRepository noticeAttachmentRepository;
-    private final S3Uploader s3Uploader;
+    private final FileUploader fileUploader;
     private final FileValidator fileValidator;
     private final EmployeePermissionRepository employeePermissionRepository;
     private final EmployeeRepository employeeRepository;
@@ -79,7 +79,7 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
         validateNoticeAccess(employee, notice);
 
         noticeAttachmentRepository.findByNoticeId(noticeId).forEach(
-                attachment -> s3Uploader.delete(attachment.getUrl())
+                attachment -> fileUploader.deleteObject(attachment.getUrl())
         );
 
         noticeAttachmentRepository.deleteByNoticeId(noticeId);
@@ -119,7 +119,7 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
         files.forEach(file -> {
             fileValidator.validateImageOrDocument(file);
 
-            final String url = s3Uploader.upload("sero/documents/", file);
+            final String url = fileUploader.uploadObject("sero/documents/", file);
 
             final NoticeAttachment noticeAttachment = new NoticeAttachment(file.getOriginalFilename(), url, notice);
 

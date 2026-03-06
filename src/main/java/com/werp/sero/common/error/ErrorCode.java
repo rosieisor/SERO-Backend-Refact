@@ -103,6 +103,7 @@ public enum ErrorCode {
     INVALID_PROCESSED_APPROVAL_LINE_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL016", "잘못된 결재선 상태입니다. 승인 또는 반려 상태만 허용됩니다."),
     APPROVAL_TEMPLATE_NAME_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL017", "이미 존재하는 결재선 템플릿 이름입니다."),
     APPROVAL_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL018", "결재선 템플릿 정보를 찾을 수 없습니다."),
+    APPROVAL_ALREADY_IN_PROGRESS(HttpStatus.CONFLICT, "APPROVAL019", "현재 해당 문서에 대해 진행 중인 결재가 있습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
@@ -119,6 +120,7 @@ public enum ErrorCode {
     PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "PDF 생성에 실패했습니다."),
     S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
     S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE006", "S3 파일 삭제에 실패했습니다."),
+    S3_COPY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE007", "S3 파일 복사에 실패했습니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),

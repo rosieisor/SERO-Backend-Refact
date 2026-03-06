@@ -1,4 +1,4 @@
-package com.werp.sero.common.file;
+package com.werp.sero.file.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
