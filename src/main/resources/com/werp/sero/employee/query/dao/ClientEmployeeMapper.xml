@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.employee.query.dao.ClientEmployeeMapper">
+
+    <select id="findById" parameterType="_int" resultType="com.werp.sero.employee.query.dto.EmployeeResponseDTO">
+        SELECT
+               id AS id
+             , name AS name
+             , email AS email
+             , position AS positionName
+          FROM client_employee A
+         WHERE A.id = #{id}
+    </select>
+</mapper>

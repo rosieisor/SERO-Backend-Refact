@@ -97,4 +97,18 @@
         ORDER BY A.id
     </select>
 
+    <select id="findByIdAndStatus" resultType="com.werp.sero.employee.query.dto.EmployeeResponseDTO">
+        SELECT
+               A.id AS id
+             , name AS name
+             , email AS email
+             , position_code AS positionCode
+             , rank_code AS rankCode
+             , dept_code AS deptCode
+             , dept_name AS deptName
+          FROM employee A
+          LEFT JOIN department B ON A.dept_id = B.id
+         WHERE A.id = #{id} AND A.status = #{status}
+    </select>
+
 </mapper>

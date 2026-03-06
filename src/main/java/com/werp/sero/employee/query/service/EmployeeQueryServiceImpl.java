@@ -3,11 +3,13 @@ package com.werp.sero.employee.query.service;
 import com.werp.sero.employee.command.domain.aggregate.Department;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.DepartmentRepository;
+import com.werp.sero.employee.command.exception.EmployeeNotFoundException;
 import com.werp.sero.employee.query.dao.DepartmentMapper;
 import com.werp.sero.employee.query.dao.EmployeeMapper;
 import com.werp.sero.employee.query.dto.DepartmentWithEmployeesDTO;
 import com.werp.sero.employee.query.dto.EmployeeByDepartmentResponseDTO;
 import com.werp.sero.employee.query.dto.EmployeeListResponseDTO;
+import com.werp.sero.employee.query.dto.EmployeeResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,17 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
     private final EmployeeMapper employeeMapper;
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
+
+    @Override
+    public EmployeeResponseDTO findEmployeeInfoById(final int id) {
+        final EmployeeResponseDTO response = employeeMapper.findByIdAndStatus(id, "ES_ACT");
+
+        if (response == null) {
+            throw new EmployeeNotFoundException();
+        }
+
+        return response;
+    }
 
     @Override
     public List<DepartmentWithEmployeesDTO> findAllEmployeesByDeptCode(final String deptCode) {
