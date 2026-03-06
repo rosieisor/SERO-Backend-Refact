@@ -1,6 +1,6 @@
 package com.werp.sero.order.command.application.service;
 
-import com.werp.sero.common.file.S3Uploader;
+import com.werp.sero.file.service.FileUploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -8,6 +8,7 @@ import com.werp.sero.order.command.domain.repository.SOItemRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class SOPdfService {
     private final SORepository soRepository;
     private final SOItemRepository soItemRepository;
-    private final S3Uploader s3Uploader;
+    private final FileUploader fileUploader;
 
     @Transactional
     public String generateAndUpload(int orderId) {
@@ -34,11 +35,11 @@ public class SOPdfService {
 
         String fileName = so.getSoCode() + ".pdf";
 
-        return s3Uploader.uploadBytes(
-                "sero/documents/",
+        return fileUploader.putByteArrayObject(
+                "documents/",
                 pdfBytes,
                 fileName,
-                "application/pdf"
+                MediaType.APPLICATION_PDF_VALUE
         );
     }
 
@@ -57,20 +58,20 @@ public class SOPdfService {
         sb.append("<style>");
         sb.append("@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&amp;display=swap');");
         sb.append("""
-        body { font-family: 'Noto Sans KR', sans-serif; padding: 10mm; color: #000; line-height: 1.4; }
-        .header-title { text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 8px; font-size: 11px; word-break: break-all; }
-        .bg-gray { background-color: #f2f2f2; font-weight: bold; text-align: center; }
-        
-        .center { text-align: center; }
-        .right { text-align: right; }
-        .left { text-align: left; padding-left: 8px; }
-        .bold { font-weight: bold; }
-        
-        .summary-table td { padding: 12px; font-size: 12px; }
-    """);
+                    body { font-family: 'Noto Sans KR', sans-serif; padding: 10mm; color: #000; line-height: 1.4; }
+                    .header-title { text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 25px; }
+                
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+                    th, td { border: 1px solid #000; padding: 8px; font-size: 11px; word-break: break-all; }
+                    .bg-gray { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+                
+                    .center { text-align: center; }
+                    .right { text-align: right; }
+                    .left { text-align: left; padding-left: 8px; }
+                    .bold { font-weight: bold; }
+                
+                    .summary-table td { padding: 12px; font-size: 12px; }
+                """);
         sb.append("</style></head><body>");
 
         sb.append("<h1 class=\"header-title\">주 문 서</h1>");
@@ -144,7 +145,7 @@ public class SOPdfService {
                 .append("<td class=\"right\">").append(df.format(order.getTotalPrice())).append("</td>")
                 .append("</tr>");
         sb.append("</tbody></table>");
-        
+
         sb.append("<table class=\"summary-table\" style=\"margin-top:30px;\"><tbody>");
         sb.append("<tr>");
         sb.append("<td class=\"bg-gray\" style=\"width:20%;\">총 수량</td>");

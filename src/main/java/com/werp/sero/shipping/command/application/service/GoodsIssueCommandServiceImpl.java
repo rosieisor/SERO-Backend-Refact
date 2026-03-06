@@ -2,9 +2,9 @@ package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
-import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.file.service.FileUploader;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
@@ -39,6 +39,7 @@ import com.werp.sero.warehouse.command.domain.repository.WarehouseStockHistoryRe
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
 import com.werp.sero.warehouse.exception.InsufficientStockException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +67,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final GIDetailQueryService giDetailQueryService;
     private final ShippingPdfService shippingPdfService;
-    private final S3Uploader s3Uploader;
+    private final FileUploader fileUploader;
 
     @Override
     @Transactional
@@ -365,7 +366,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
             // 5-4. S3 업로드
             String fileName = giCode + ".pdf";
-            String giUrl = s3Uploader.uploadPdf("sero/documents/goods-issues/", pdfBytes, fileName);
+            String giUrl = fileUploader.putByteArrayObject("sero/documents/goods-issues/", pdfBytes, fileName
+                    , MediaType.APPLICATION_PDF_VALUE);
 
             // 5-5. Entity에 URL 저장
             updatedGoodsIssue.updateGiUrl(giUrl);

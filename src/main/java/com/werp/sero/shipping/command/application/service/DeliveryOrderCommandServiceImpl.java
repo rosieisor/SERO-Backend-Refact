@@ -1,10 +1,10 @@
 package com.werp.sero.shipping.command.application.service;
 
-import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
+import com.werp.sero.file.service.FileUploader;
 import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -24,6 +24,7 @@ import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
 import com.werp.sero.shipping.query.service.DODetailQueryService;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final DODetailQueryService doDetailQueryService;
     private final ShippingPdfService shippingPdfService;
-    private final S3Uploader s3Uploader;
+    private final FileUploader fileUploader;
     private final SOStateService soStateService;
     private final EmployeeRepository employeeRepository;
 
@@ -124,7 +125,8 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
 
             // 7-4. S3 업로드
             String fileName = doCode + ".pdf";
-            String doUrl = s3Uploader.uploadPdf("sero/documents/delivery-orders/", pdfBytes, fileName);
+            String doUrl = fileUploader.putByteArrayObject("sero/documents/delivery-orders/", pdfBytes,
+                    fileName, MediaType.APPLICATION_PDF_VALUE);
 
             // 7-5. Entity에 URL 저장
             savedDeliveryOrder.updateDoUrl(doUrl);

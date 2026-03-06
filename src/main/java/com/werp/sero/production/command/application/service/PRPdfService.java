@@ -1,7 +1,7 @@
 package com.werp.sero.production.command.application.service;
 
-import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
+import com.werp.sero.file.service.FileUploader;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
 import com.werp.sero.production.command.domain.repository.PRItemRepository;
@@ -20,7 +20,7 @@ public class PRPdfService {
 
     private final PRRepository prRepository;
     private final PRItemRepository prItemRepository;
-    private final S3Uploader s3Uploader;
+    private final FileUploader fileUploader;
 
     @Transactional
     public String generateAndUpload(int prId) {
@@ -34,7 +34,7 @@ public class PRPdfService {
         byte[] pdfBytes = PdfGenerator.generate(html);
 
         String fileName = pr.getPrCode() + ".pdf";
-        return s3Uploader.uploadBytes(
+        return fileUploader.putByteArrayObject(
                 "sero/documents/production-requests",
                 pdfBytes,
                 fileName,
