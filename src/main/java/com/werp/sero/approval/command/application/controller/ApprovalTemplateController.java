@@ -4,7 +4,7 @@ import com.werp.sero.approval.command.application.dto.ApprovalTemplateCreateRequ
 import com.werp.sero.approval.command.application.dto.ApprovalTemplateResponseDTO;
 import com.werp.sero.approval.command.application.service.ApprovalTemplateService;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

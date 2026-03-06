@@ -4,7 +4,7 @@ import com.werp.sero.notice.query.dto.NoticeDetailResponseDTO;
 import com.werp.sero.notice.query.dto.NoticeListResponseDTO;
 import com.werp.sero.notice.query.service.NoticeQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

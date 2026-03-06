@@ -2,9 +2,9 @@ package com.werp.sero.order.command.application.controller;
 
 import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import com.werp.sero.order.command.application.service.SOClientCommandService;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

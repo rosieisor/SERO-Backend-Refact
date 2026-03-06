@@ -2,15 +2,11 @@ package com.werp.sero.production.command.application.controller;
 
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.production.command.application.dto.PRDraftUpdateRequestDTO;
 import com.werp.sero.production.command.application.dto.PRManagerAssignRequestDTO;
 import com.werp.sero.production.command.application.service.PRCommandService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

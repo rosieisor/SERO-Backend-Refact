@@ -2,7 +2,7 @@ package com.werp.sero.notice.query.service;
 
 import com.werp.sero.notice.query.dto.NoticeDetailResponseDTO;
 import com.werp.sero.notice.query.dto.NoticeListResponseDTO;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import org.springframework.data.domain.Pageable;
 
 public interface NoticeQueryService {

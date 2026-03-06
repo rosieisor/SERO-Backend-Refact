@@ -2,8 +2,8 @@ package com.werp.sero.order.query.controller;
 
 import com.werp.sero.order.query.dto.SOClientDashboardResponseDTO;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.order.query.service.SOClientDashboardQueryService;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

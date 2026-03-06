@@ -7,7 +7,7 @@ import com.werp.sero.notice.query.dto.NoticeFilterDTO;
 import com.werp.sero.notice.query.dto.NoticeListResponseDTO;
 import com.werp.sero.notice.query.dto.NoticeSummaryResponseDTO;
 import com.werp.sero.security.enums.Type;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

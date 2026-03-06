@@ -5,7 +5,7 @@ import com.werp.sero.client.command.application.dto.ClientAddressUpdateRequest;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateResponse;
 import com.werp.sero.client.command.application.service.ClientAddressCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

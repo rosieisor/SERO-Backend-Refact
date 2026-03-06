@@ -2,7 +2,7 @@ package com.werp.sero.production.command.application.controller;
 
 import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.production.command.application.service.PPCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

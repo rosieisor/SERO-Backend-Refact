@@ -1,6 +1,7 @@
 package com.werp.sero.notification.command.application.controller;
 
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.werp.sero.notification.command.application.service.SseCommandService;
-import com.werp.sero.security.principal.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

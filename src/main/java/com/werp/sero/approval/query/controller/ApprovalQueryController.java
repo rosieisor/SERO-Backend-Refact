@@ -3,7 +3,7 @@ package com.werp.sero.approval.query.controller;
 import com.werp.sero.approval.query.dto.*;
 import com.werp.sero.approval.query.service.ApprovalQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

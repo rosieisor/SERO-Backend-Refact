@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.werp.sero.client.command.application.service.ClientAddressCommandService;
 import com.werp.sero.client.query.dto.ClientAddressResponseDTO;
 import com.werp.sero.client.query.service.ClientAddressQueryService;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

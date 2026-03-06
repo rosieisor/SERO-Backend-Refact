@@ -2,7 +2,7 @@ package com.werp.sero.notice.command.application.controller;
 
 import com.werp.sero.notice.command.application.dto.NoticeCreateRequestDTO;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.notice.command.application.dto.NoticeResponseDTO;
 import com.werp.sero.notice.command.application.service.NoticeCommandService;
 import io.swagger.v3.oas.annotations.Operation;

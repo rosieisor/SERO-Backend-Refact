@@ -2,8 +2,8 @@ package com.werp.sero.production.query.controller;
 
 import com.werp.sero.production.query.dto.*;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.production.query.service.PRQueryService;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

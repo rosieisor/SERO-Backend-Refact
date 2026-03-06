@@ -1,7 +1,7 @@
 package com.werp.sero.shipping.command.application.controller;
 
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.shipping.command.application.service.DeliveryCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

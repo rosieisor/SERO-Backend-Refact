@@ -3,7 +3,7 @@ package com.werp.sero.shipping.query.controller;
 import com.werp.sero.common.security.AccessType;
 import com.werp.sero.common.security.RequirePermission;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
 import com.werp.sero.shipping.query.dto.DOListResponseDTO;
 import com.werp.sero.shipping.query.service.DODetailQueryService;
