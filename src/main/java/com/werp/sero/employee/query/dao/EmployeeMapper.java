@@ -1,6 +1,7 @@
 package com.werp.sero.employee.query.dao;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.query.dto.EmployeeResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -21,4 +22,6 @@ public interface EmployeeMapper {
      * 부서별 사원 목록 조회 (부서 정보 포함)
      */
     List<Employee> findByDepartmentIdWithDepartment(@Param("departmentId") int departmentId);
+
+    EmployeeResponseDTO findByIdAndStatus(@Param("id") final int id, @Param("status") final String status);
 }

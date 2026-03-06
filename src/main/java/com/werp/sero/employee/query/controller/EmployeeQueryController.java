@@ -1,10 +1,12 @@
 package com.werp.sero.employee.query.controller;
 
-
 import com.werp.sero.common.security.AccessType;
 import com.werp.sero.common.security.RequirePermission;
 import com.werp.sero.employee.query.dto.DepartmentWithEmployeesDTO;
+import com.werp.sero.employee.query.dto.EmployeeResponseDTO;
 import com.werp.sero.employee.query.service.EmployeeQueryService;
+import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -25,8 +27,13 @@ import java.util.List;
 @RequestMapping("/employees")
 @RequiredArgsConstructor
 public class EmployeeQueryController {
-
     private final EmployeeQueryService employeeQueryService;
+
+    @Operation(summary = "내 정보 조회 (본사 직원)")
+    @GetMapping("/me")
+    public ResponseEntity<EmployeeResponseDTO> findEmployeeInfoById(@CurrentUser final CustomUserDetails principal) {
+        return ResponseEntity.ok(employeeQueryService.findEmployeeInfoById(principal.getId()));
+    }
 
     /**
      * 부서별 사원 목록 조회 (부서 코드 기준)
