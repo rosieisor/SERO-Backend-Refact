@@ -15,6 +15,9 @@ public class R2Uploader extends AbstractFileUploader {
     @Value("${cloudflare.r2.account-id}")
     private String accountId;
 
+    @Value("${cloudflare.r2.public-url}")
+    private String publicUrl;
+
     public R2Uploader(final S3Client s3Client, final S3Presigner s3Presigner) {
         super(s3Client, s3Presigner);
     }
@@ -26,6 +29,7 @@ public class R2Uploader extends AbstractFileUploader {
 
     @Override
     protected String generatePublicUrl(final String key) {
-        return "https://" + accountId + ".r2.cloudflarestorage.com/" + key;
+//        return "https://" + accountId + ".r2.cloudflarestorage.com/" + key;
+        return publicUrl + "/" + key;
     }
 }

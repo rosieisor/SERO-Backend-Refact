@@ -1,8 +1,10 @@
 package com.werp.sero.approval.command.application.service;
 
-import com.werp.sero.common.error.exception.EntityNotFoundException;
+import com.werp.sero.approval.exception.ApprovalNotSubmittedException;
+import com.werp.sero.approval.exception.ApprovalRefDocumentAlreadyProcessedException;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.production.command.domain.repository.PRRepository;
+import com.werp.sero.production.exception.ProductionRequestNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +22,45 @@ public class PRApprovalValidator implements ApprovalRefCodeValidator {
 
     @Override
     public ProductionRequest validate(final String refCode) {
-        // TODO PR(생산요청) 찾을 수 없다는 에러로 교체
         return prRepository.findByPrCode(refCode)
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(ProductionRequestNotFoundException::new);
+    }
+
+    @Override
+    public void updateApprovalCodeAndStatus(final String approvalCode, final Object object) {
+        ((ProductionRequest) object).updateApprovalInfo(approvalCode, "PR_APPR_PEND");
+    }
+
+    @Override
+    public void approve(final Object ref) {
+        final ProductionRequest pr = (ProductionRequest) ref;
+
+        validatePendingState(pr);
+
+        pr.updateApprovalInfo(pr.getApprovalCode(), "PR_APPR_DONE");
+    }
+
+    @Override
+    public void reject(final Object ref) {
+        final ProductionRequest pr = (ProductionRequest) ref;
+
+        validatePendingState(pr);
+
+        pr.updateApprovalInfo(pr.getApprovalCode(), "PR_APPR_RJCT");
+    }
+
+    private void validatePendingState(final ProductionRequest pr) {
+        if (pr.getApprovalCode() == null) {
+            throw new ApprovalNotSubmittedException();
+        }
+
+        if (!"PR_APPR_PEND".equals(pr.getStatus())) {
+            throw new ApprovalRefDocumentAlreadyProcessedException();
+        }
+    }
+
+    @Override
+    public int getApprovalCode(final Object object) {
+        return ((ProductionRequest) object).getId();
     }
 }

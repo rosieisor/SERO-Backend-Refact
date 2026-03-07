@@ -39,8 +39,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     /* Database */
-//    runtimeOnly 'com.mysql:mysql-connector-j'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+//    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
     /* Swagger OpenAPI */
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
@@ -58,12 +58,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
     /* AWS S3 */
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1'
+    // Source: https://mvnrepository.com/artifact/software.amazon.awssdk/s3
+    implementation 'software.amazon.awssdk:s3:2.41.34'
 
-    /* PDF Generation */
-    implementation 'com.itextpdf:itext7-core:7.2.5'
-    implementation 'com.itextpdf:html2pdf:4.0.5'
-    implementation 'com.itextpdf:font-asian:7.2.5'
+
 
     /* Test */
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
