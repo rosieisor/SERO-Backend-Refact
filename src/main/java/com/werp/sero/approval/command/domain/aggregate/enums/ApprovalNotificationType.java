@@ -1,9 +1,7 @@
 package com.werp.sero.approval.command.domain.aggregate.enums;
 
 import com.werp.sero.approval.command.domain.aggregate.Approval;
-import lombok.Getter;
 
-@Getter
 public enum ApprovalNotificationType {
     REQUEST {
         @Override

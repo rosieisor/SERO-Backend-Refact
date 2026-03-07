@@ -32,5 +32,10 @@ public class ApprovalCreateRequestDTO {
     @Size(min = 1)
     @NotNull(message = "1개 이상의 결재선이 필요합니다.")
     @Valid
-    List<ApprovalLineRequestDTO> approvalLines;
+    List<ApprovalLineRequestDTO> approvers;
+
+    @Valid
+    List<ApprovalReferenceRequestDTO> references;
+
+    List<ApprovalAttachRequestDTO> attachments;
 }

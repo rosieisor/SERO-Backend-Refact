@@ -5,17 +5,13 @@ import com.werp.sero.approval.command.application.dto.ApprovalDecisionRequestDTO
 import com.werp.sero.approval.command.application.dto.ApprovalResponseDTO;
 import com.werp.sero.approval.command.application.service.ApprovalCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.principal.CustomUserDetails;
+import com.werp.sero.security.userdetails.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Tag(name = "결재 - Command", description = "결재 관련 API")
 @RequestMapping("/approvals")
@@ -25,11 +21,10 @@ public class ApprovalCommandController {
     private final ApprovalCommandService approvalCommandService;
 
     @Operation(summary = "결재 상신")
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping
     public ResponseEntity<ApprovalResponseDTO> submitForApproval(@CurrentUser final CustomUserDetails user,
-                                                                 @Valid @RequestPart(name = "requestDTO") final ApprovalCreateRequestDTO requestDTO,
-                                                                 @RequestPart(name = "files", required = false) final List<MultipartFile> files) {
-        return ResponseEntity.ok(approvalCommandService.submitForApproval(user.getId(), requestDTO, files));
+                                                                 @Valid @RequestBody final ApprovalCreateRequestDTO requestDTO) {
+        return ResponseEntity.ok(approvalCommandService.submitForApproval(user.getId(), requestDTO));
     }
 
     @Operation(summary = "결재 승인")
